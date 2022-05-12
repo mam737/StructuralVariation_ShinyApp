@@ -9,7 +9,8 @@ library(stringr)
 library(data.table)
 library(tidyr)
 
-## For ease, we have outputted the relevant sessionInfo 
+## For ease, we have outputted the relevant sessionInfo
+## used when running this script 
 
 #> sessionInfo()
 #R version 4.0.4 (2021-02-15)
