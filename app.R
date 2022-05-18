@@ -18,6 +18,7 @@ library(ggplot2)
 library(DT)
 library(IRanges)
 library(aws.s3)
+library(shinydashboard)
 
 
 ## For ease, we have outputted the relevant sessionInfo
@@ -35,54 +36,33 @@ library(aws.s3)
 #[1] en_US.UTF-8/en_US.UTF-8/en_US.UTF-8/C/en_US.UTF-8/en_US.UTF-8#
 
 #attached base packages:
-#[1] stats4    stats     graphics  grDevices utils     datasets  methods   base     #
+#[1] stats     graphics  grDevices utils     datasets  methods   base     #
 
 #other attached packages:
-# [1] arrow_8.0.0          aws.s3_0.3.21        IRanges_2.30.0       S4Vectors_0.34.0    
-# [5] BiocGenerics_0.42.0  ape_5.6-2            treemap_2.4-3        BiocManager_1.30.17 
-# [9] rsconnect_0.8.25     DT_0.22              data.table_1.14.2    gggenomes_0.9.5.9000
-#[13] snakecase_0.11.0     jsonlite_1.8.0       tibble_3.1.7         thacklr_0.0.0.9000  
-#[17] tidyr_1.2.0          stringr_1.4.0        readr_2.1.2          purrr_0.3.4         
-#[21] gggenes_0.4.1        ggplot2_3.3.6        dplyr_1.0.9          shiny_1.7.1         #
+# [1] shinydashboard_0.7.2 DT_0.22              data.table_1.14.2    gggenomes_0.9.5.9000
+# [5] snakecase_0.11.0     jsonlite_1.8.0       tibble_3.1.7         thacklr_0.0.0.9000  
+# [9] tidyr_1.2.0          stringr_1.4.0        readr_2.1.2          purrr_0.3.4         
+#[13] gggenes_0.4.1        ggplot2_3.3.6        dplyr_1.0.9          rsconnect_0.8.25    
+#[17] BiocManager_1.30.17 #
 
 #loaded via a namespace (and not attached):
-# [1] colorspace_2.0-3            rjson_0.2.21                ellipsis_0.3.2             
-# [4] rprojroot_2.0.3             XVector_0.36.0              GenomicRanges_1.48.0       
-# [7] base64enc_0.1-3             rstudioapi_0.13             farver_2.1.0               
-#[10] ggfittext_0.9.1             bit64_4.0.5                 fansi_1.0.3                
-#[13] xml2_1.3.3                  cachem_1.0.6                pkgload_1.2.4              
-#[16] Rsamtools_2.12.0            packrat_0.7.0               gridBase_0.4-7             
-#[19] compiler_4.2.0              httr_1.4.3                  assertthat_0.2.1           
-#[22] Matrix_1.4-1                fastmap_1.1.0               cli_3.3.0                  
-#[25] later_1.3.0                 sourcetools_0.1.7           htmltools_0.5.2            
-#[28] tools_4.2.0                 igraph_1.3.1                gtable_0.3.0               
-#[31] glue_1.6.2                  GenomeInfoDbData_1.2.8      Rcpp_1.0.8.3               
-#[34] Biobase_2.56.0              jquerylib_0.1.4             vctrs_0.4.1                
-#[37] Biostrings_2.64.0           nlme_3.1-157                rtracklayer_1.56.0         
-#[40] crosstalk_1.2.0             brio_1.1.3                  testthat_3.1.4             
-#[43] mime_0.12                   lifecycle_1.0.1             restfulr_0.0.13            
-#[46] XML_3.99-0.9                zlibbioc_1.42.0             scales_1.2.0               
-#[49] hms_1.1.1                   promises_1.2.0.1            MatrixGenerics_1.8.0       
-#[52] parallel_4.2.0              SummarizedExperiment_1.26.1 RColorBrewer_1.1-3         
-#[55] yaml_2.3.5                  curl_4.3.2                  aws.signature_0.6.0        
-#[58] sass_0.4.1                  stringi_1.7.6               BiocIO_1.6.0               
-#[61] desc_1.4.1                  BiocParallel_1.30.0         GenomeInfoDb_1.32.1        
-#[64] rlang_1.0.2                 pkgconfig_2.0.3             bitops_1.0-7               
-#[67] matrixStats_0.62.0          lattice_0.20-45             GenomicAlignments_1.32.0   
-#[70] htmlwidgets_1.5.4           labeling_0.4.2              bit_4.0.4                  
-#[73] tidyselect_1.1.2            magrittr_2.0.3              R6_2.5.1                   
-#[76] generics_0.1.2              DelayedArray_0.22.0         DBI_1.1.2                  
-#[79] pillar_1.7.0                withr_2.5.0                 RCurl_1.98-1.6             
-#[82] crayon_1.5.1                utf8_1.2.2                  tzdb_0.3.0                 
-#[85] grid_4.2.0                  digest_0.6.29               xtable_1.8-4               
-#[88] httpuv_1.6.5                openssl_2.0.0               munsell_0.5.0              
+# [1] tidyselect_1.1.2  colorspace_2.0-3  vctrs_0.4.1       generics_0.1.2    htmltools_0.5.2  
+# [6] utf8_1.2.2        rlang_1.0.2       later_1.3.0       pillar_1.7.0      glue_1.6.2       
+#[11] withr_2.5.0       DBI_1.1.2         lifecycle_1.0.1   ggfittext_0.9.1   munsell_0.5.0    
+#[16] gtable_0.3.0      htmlwidgets_1.5.4 tzdb_0.3.0        fastmap_1.1.0     httpuv_1.6.5     
+#[21] curl_4.3.2        fansi_1.0.3       Rcpp_1.0.8.3      xtable_1.8-4      openssl_2.0.0    
+#[26] promises_1.2.0.1  scales_1.2.0      mime_0.12         askpass_1.1       hms_1.1.1        
+#[31] packrat_0.7.0     digest_0.6.29     stringi_1.7.6     shiny_1.7.1       grid_4.2.0       
+#[36] cli_3.3.0         tools_4.2.0       magrittr_2.0.3    crayon_1.5.1      pkgconfig_2.0.3  
+#[41] ellipsis_0.3.2    assertthat_0.2.1  R6_2.5.1          compiler_4.2.0             
 #[91] bslib_0.3.1                 askpass_1.1      
 
 #Need to run before deploying App
 #library(BiocManager)
+#library(rsconnect)
 #options(repos = BiocManager::repositories())
 
-NAM_lines <- c('B73','B97','Ky21','M162W','Ms71','Oh43','Oh7b','M37W','Mo18W','Tx303','HP301',
+NAM_lines <- c('B73','B97','Ky21','M162W','Ms71','Oh43','Oh7B','M37W','Mo18W','Tx303','HP301',
                'P39','Il14H','CML52','CML69','CML103','CML228','CML247','CML277','CML322','CML333',
                'Ki3','Ki11','NC350','NC358','Tzi8')
 
@@ -113,28 +93,34 @@ obtain_alt_endpoints <- function(chr_query_data,query_line,start_pos,end_pos) {
     
 }
 
-ui <- fluidPage(
-
+ui <- dashboardPage(
     # Application title
-    titlePanel("AnchorWave Identified Structural Variation in NAM"),
-    
+  dashboardHeader(
+    title="AnchorWave Identified Structural Variation in NAM",
+    titleWidth = 450
+  ),
+    #dashboardHeader("AnchorWave Identified Structural Variation in NAM"),
+  dashboardSidebar(
+    selectInput('query','Reference:',choices=NAM_lines,selected='B73',multiple=F),
+    textInput('coord','Coordinates:',value='chr7:151367073..151379756'),
+    selectInput('comp','Comparison:',choices=NAM_lines,selected='B97',multiple=F),
+    actionButton("go","Go")
+  ),
+
+  dashboardBody(
     fluidRow(
-        column(width=2,selectInput('query','Reference:',choices=NAM_lines,selected='B73',multiple=F)),
-        column(width=3,textInput('coord','Coordinates:',value='chr7:151367073..151379756')),
-        column(width=2,selectInput('comp','Comparison:',choices=NAM_lines,selected='B97',multiple=F)),
-        column(width=2,actionButton("go","Go"), style = "margin-top: 22px;")
+      shinydashboard::box(title='Visualize Nonvariant Regions',plotOutput("gggenomes_output",width='100%',height='200px'),width=12)
     ),
-    
-    mainPanel(
-        h4('Visualize Nonvariant Regions'),
-        plotOutput("gggenomes_output",width='130%',height='200px'),
-        h4('Summarized AnchorWave Output'),
-        DT::dataTableOutput(outputId = "table"),
-        h4('Gene Tracks'),
-        DT::dataTableOutput(outputId = "gene_track"),
-        h4('Present TEs'),
-        DT::dataTableOutput(outputId = "TE_track")
+    fluidRow(
+      shinydashboard::box(title='Summarized AnchorWave Output',DT::dataTableOutput(outputId = "table"),width=12)
+    ),
+    fluidRow(
+      shinydashboard::box(title='Gene Tracks',DT::dataTableOutput(outputId = "gene_track"),width=12)
+    ),
+    fluidRow(
+      shinydashboard::box(title='Present TEs',DT::dataTableOutput(outputId = "TE_track"),width=12)
     )
+  )
 )
 
 # Define server logic required to draw a histogram
@@ -337,8 +323,8 @@ server <- function(input, output) {
         ASM_end_pos <- as.numeric(anchorwave_tsv()[nrow(anchorwave_tsv()),6])
         
         coord_inputs <- input$coord
-        chr_input <- unlist(str_split(coord_inputs,pattern =':'))[1]
-        range_input <- unlist(str_split(coord_inputs,pattern =':'))[2]
+        chr_input <- unlist(str_split(tolower(coord_inputs),pattern =':'))[1]
+        range_input <- gsub(',','',unlist(str_split(coord_inputs,pattern =':'))[2])
         start_input <- as.numeric(unlist(str_split(range_input,pattern='[..]'))[1])
         end_input <- as.numeric(unlist(str_split(range_input,pattern='[..]'))[3])
         
@@ -439,10 +425,10 @@ server <- function(input, output) {
       ID_end_pos <- as.numeric(anchorwave_tsv()[nrow(anchorwave_tsv()),3])
       ASM_start_pos <- as.numeric(anchorwave_tsv()[1,5])
       ASM_end_pos <- as.numeric(anchorwave_tsv()[nrow(anchorwave_tsv()),6])
-      
+
       coord_inputs <- input$coord
-      chr_input <- unlist(str_split(coord_inputs,pattern =':'))[1]
-      range_input <- unlist(str_split(coord_inputs,pattern =':'))[2]
+      chr_input <- unlist(str_split(tolower(coord_inputs),pattern =':'))[1]
+      range_input <- gsub(',','',unlist(str_split(coord_inputs,pattern =':'))[2])
       start_input <- as.numeric(unlist(str_split(range_input,pattern='[..]'))[1])
       end_input <- as.numeric(unlist(str_split(range_input,pattern='[..]'))[3])
       
@@ -506,8 +492,8 @@ server <- function(input, output) {
       ASM_end_pos <- as.numeric(anchorwave_tsv()[nrow(anchorwave_tsv()),6])
       
       coord_inputs <- input$coord
-      chr_input <- unlist(str_split(coord_inputs,pattern =':'))[1]
-      range_input <- unlist(str_split(coord_inputs,pattern =':'))[2]
+      chr_input <- unlist(str_split(tolower(coord_inputs),pattern =':'))[1]
+      range_input <- gsub(',','',unlist(str_split(coord_inputs,pattern =':'))[2])
       start_input <- as.numeric(unlist(str_split(range_input,pattern='[..]'))[1])
       end_input <- as.numeric(unlist(str_split(range_input,pattern='[..]'))[3])
       
@@ -567,10 +553,10 @@ server <- function(input, output) {
       ID_end_pos <- as.numeric(anchorwave_tsv()[nrow(anchorwave_tsv()),3])
       ASM_start_pos <- as.numeric(anchorwave_tsv()[1,5])
       ASM_end_pos <- as.numeric(anchorwave_tsv()[nrow(anchorwave_tsv()),6])
-      
+
       coord_inputs <- input$coord
-      chr_input <- unlist(str_split(coord_inputs,pattern =':'))[1]
-      range_input <- unlist(str_split(coord_inputs,pattern =':'))[2]
+      chr_input <- unlist(str_split(tolower(coord_inputs),pattern =':'))[1]
+      range_input <- gsub(',','',unlist(str_split(coord_inputs,pattern =':'))[2])
       start_input <- as.numeric(unlist(str_split(range_input,pattern='[..]'))[1])
       end_input <- as.numeric(unlist(str_split(range_input,pattern='[..]'))[3])
       
@@ -620,8 +606,8 @@ server <- function(input, output) {
         ASM_lineage <- sort(lineage_inputs)[2]
         
         coord_inputs <- input$coord
-        chr_input <- unlist(str_split(coord_inputs,pattern =':'))[1]
-        range_input <- unlist(str_split(coord_inputs,pattern =':'))[2]
+        chr_input <- unlist(str_split(tolower(coord_inputs),pattern =':'))[1]
+        range_input <- gsub(',','',unlist(str_split(coord_inputs,pattern =':'))[2])
         start_input <- as.numeric(unlist(str_split(range_input,pattern='[..]'))[1])
         end_input <- as.numeric(unlist(str_split(range_input,pattern='[..]'))[3])
         
@@ -651,7 +637,7 @@ server <- function(input, output) {
               geom_vline(xintercept=coord_end,color='gray68',linetype='longdash') +
               guides(colour=guide_legend( override.aes=list(linetype=c(0,1))))
         } else {
-            gggenomes(seqs=seq_track(),links=link_track()) +
+            gggenomes(seqs=seq_track(),links=link_track(),feats=list(output_TE)) +
               geom_seq(color='#742615',size=2) + 
               geom_feat(data=feats(output_TE),color='#F6C564') +
               geom_bin_label() +
