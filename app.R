@@ -1,5 +1,5 @@
 ### This R Shiny script generates is used to deploy the app
-### Last Updated - 05/12/22; Written by Manisha Munasinghe
+### Last Updated - 05/20/22; Written by Manisha Munasinghe
 ### Note: The gggenomes package works best with the newest version of R
 
 
@@ -19,6 +19,7 @@ library(DT)
 library(IRanges)
 library(aws.s3)
 library(shinydashboard)
+library(shinyFeedback)
 
 
 ## For ease, we have outputted the relevant sessionInfo
@@ -36,27 +37,29 @@ library(shinydashboard)
 #[1] en_US.UTF-8/en_US.UTF-8/en_US.UTF-8/C/en_US.UTF-8/en_US.UTF-8#
 
 #attached base packages:
-#[1] stats     graphics  grDevices utils     datasets  methods   base     #
+#[1] stats4    stats     graphics  grDevices utils     datasets  methods   base     #
 
 #other attached packages:
-# [1] shinydashboard_0.7.2 DT_0.22              data.table_1.14.2    gggenomes_0.9.5.9000
-# [5] snakecase_0.11.0     jsonlite_1.8.0       tibble_3.1.7         thacklr_0.0.0.9000  
-# [9] tidyr_1.2.0          stringr_1.4.0        readr_2.1.2          purrr_0.3.4         
-#[13] gggenes_0.4.1        ggplot2_3.3.6        dplyr_1.0.9          rsconnect_0.8.25    
-#[17] BiocManager_1.30.17 #
+# [1] shinyFeedback_0.4.0  IRanges_2.30.0       S4Vectors_0.34.0     BiocGenerics_0.42.0 
+# [5] shiny_1.7.1          aws.s3_0.3.21        shinydashboard_0.7.2 DT_0.22             
+# [9] data.table_1.14.2    gggenomes_0.9.5.9000 snakecase_0.11.0     jsonlite_1.8.0      
+#[13] tibble_3.1.7         thacklr_0.0.0.9000   tidyr_1.2.0          stringr_1.4.0       
+#[17] readr_2.1.2          purrr_0.3.4          gggenes_0.4.1        ggplot2_3.3.6       
+#[21] dplyr_1.0.9          rsconnect_0.8.25     BiocManager_1.30.17 #
 
 #loaded via a namespace (and not attached):
-# [1] tidyselect_1.1.2  colorspace_2.0-3  vctrs_0.4.1       generics_0.1.2    htmltools_0.5.2  
-# [6] utf8_1.2.2        rlang_1.0.2       later_1.3.0       pillar_1.7.0      glue_1.6.2       
-#[11] withr_2.5.0       DBI_1.1.2         lifecycle_1.0.1   ggfittext_0.9.1   munsell_0.5.0    
-#[16] gtable_0.3.0      htmlwidgets_1.5.4 tzdb_0.3.0        fastmap_1.1.0     httpuv_1.6.5     
-#[21] curl_4.3.2        fansi_1.0.3       Rcpp_1.0.8.3      xtable_1.8-4      openssl_2.0.0    
-#[26] promises_1.2.0.1  scales_1.2.0      mime_0.12         askpass_1.1       hms_1.1.1        
-#[31] packrat_0.7.0     digest_0.6.29     stringi_1.7.6     shiny_1.7.1       grid_4.2.0       
-#[36] cli_3.3.0         tools_4.2.0       magrittr_2.0.3    crayon_1.5.1      pkgconfig_2.0.3  
-#[41] ellipsis_0.3.2    assertthat_0.2.1  R6_2.5.1          compiler_4.2.0             
-#[91] bslib_0.3.1                 askpass_1.1      
-
+# [1] Rcpp_1.0.8.3        assertthat_0.2.1    digest_0.6.29       packrat_0.7.0       utf8_1.2.2         
+# [6] aws.signature_0.6.0 mime_0.12           R6_2.5.1            httr_1.4.3          pillar_1.7.0       
+#[11] rlang_1.0.2         curl_4.3.2          fontawesome_0.2.2   rstudioapi_0.13     jquerylib_0.1.4    
+#[16] labeling_0.4.2      htmlwidgets_1.5.4   munsell_0.5.0       compiler_4.2.0      httpuv_1.6.5       
+#[21] pkgconfig_2.0.3     askpass_1.1         base64enc_0.1-3     htmltools_0.5.2     openssl_2.0.0      
+#[26] ggfittext_0.9.1     tidyselect_1.1.2    fansi_1.0.3         crayon_1.5.1        tzdb_0.3.0         
+#[31] withr_2.5.0         later_1.3.0         grid_4.2.0          xtable_1.8-4        gtable_0.3.0       
+#[36] lifecycle_1.0.1     DBI_1.1.2           magrittr_2.0.3      scales_1.2.0        cachem_1.0.6       
+#[41] cli_3.3.0           stringi_1.7.6       farver_2.1.0        promises_1.2.0.1    bslib_0.3.1        
+#[46] xml2_1.3.3          ellipsis_0.3.2      generics_0.1.2      vctrs_0.4.1         tools_4.2.0        
+#[51] glue_1.6.2          crosstalk_1.2.0     hms_1.1.1           yaml_2.3.5          fastmap_1.1.0      
+#[56] colorspace_2.0-3    sass_0.4.1  
 #Need to run before deploying App
 #library(BiocManager)
 #library(rsconnect)
@@ -68,6 +71,21 @@ NAM_lines <- c('B73','B97','Ky21','M162W','Ms71','Oh43','Oh7B','M37W','Mo18W','T
 
 chr_positions <- c("chr1","chr2","chr3","chr4","chr5","chr6","chr7","chr8","chr9","chr10")
 
+
+## AnchorWave outputs do not cover the entirety of the chromosome
+## notably telomeric regions at the end of the chromosome
+## This function is used to warn users that the supplied coordinate inputs
+## are outside of AW's information and consequently cannot be plotted
+validate_coord_inputs <- function(chr_query_data,query_line,start_pos,end_pos) {
+  query_sub <- chr_query_data %>% select(contains(query_line))
+  max_end_point <- as.numeric(query_sub[nrow(query_sub),3])
+  
+  if (start_pos >= max_end_point | end_pos >= max_end_point) {
+    return(FALSE)
+  } else {
+    return(TRUE)
+  }
+}
 
 ## Given user supplied endpoints, we often have to extend them so that the
 ## full region it falls within is visualized
@@ -99,15 +117,16 @@ ui <- dashboardPage(
     title="AnchorWave Identified Structural Variation in NAM",
     titleWidth = 450
   ),
-    #dashboardHeader("AnchorWave Identified Structural Variation in NAM"),
+
   dashboardSidebar(
     selectInput('query','Reference:',choices=NAM_lines,selected='B73',multiple=F),
     textInput('coord','Coordinates:',value='chr7:151367073..151379756'),
     selectInput('comp','Comparison:',choices=NAM_lines,selected='B97',multiple=F),
     actionButton("go","Go")
   ),
-
+  
   dashboardBody(
+    useShinyFeedback(),
     fluidRow(
       shinydashboard::box(title='Visualize Nonvariant Regions',plotOutput("gggenomes_output",width='100%',height='200px'),width=12)
     ),
@@ -140,10 +159,28 @@ server <- function(input, output) {
         ASM_lineage <- sort(lineage_inputs)[2]
         
         coord_inputs <- input$coord
-        chr_input <- unlist(str_split(coord_inputs,pattern =':'))[1]
-        range_input <- unlist(str_split(coord_inputs,pattern =':'))[2]
+        chr_input <- unlist(str_split(tolower(coord_inputs),pattern =':'))[1]
+        range_input <- gsub(',','',unlist(str_split(coord_inputs,pattern =':'))[2])
         start_input <- as.numeric(unlist(str_split(range_input,pattern='[..]'))[1])
         end_input <- as.numeric(unlist(str_split(range_input,pattern='[..]'))[3])
+
+        # Ensure Start Coord < End Coord
+        if (start_input > end_input) {
+          showFeedbackWarning(
+            inputId='coord',
+            text='Start Coord < End Coord'
+          )
+          req(start_input < end_input)
+        }
+        
+        # Ensure Supplied Chr is Valid
+        if ( !(chr_input %in% chr_positions) ) {
+          showFeedbackWarning(
+            inputId='coord',
+            text='Not Accepted Chromosome'
+          )
+          req(chr_input %in% chr_positions)
+        }
 
         # Data is stored on an AWS S3 Server Through UMN - access it this way
         AnchorWave_dir <- 's3://shiny-namsv-data-storage/AnchorWave_Regions/'
@@ -158,14 +195,33 @@ server <- function(input, output) {
         chr_data <- save_object(full_path,base_url = 'host_url', region = 'host_region',key='access_ID',secret='access_key')  %>% data.table::fread()
         unlink(filename)
         
+        # Check Coordinates Within AW Range
+        coord_within_AWrange <- validate_coord_inputs(chr_data,query_lineage,as.numeric(start_input),as.numeric(end_input))        
+        if (!coord_within_AWrange) {
+          showFeedbackWarning(
+            inputId='coord',
+            text='Coords Outside AW Alignment'
+          )
+          req(coord_within_AWrange)
+        }
+
         # Find external end points for visualized region
         updated_end_points <- obtain_alt_endpoints(chr_data,query_lineage,as.numeric(start_input),as.numeric(end_input))
         
+
+        # Add check if region results in one end point block
         # Update visualization endpoints
-        ID_start_pos <- as.numeric(updated_end_points[1,2])
-        ID_end_pos <- as.numeric(updated_end_points[2,3])
-        ASM_start_pos <- as.numeric(updated_end_points[1,5])
-        ASM_end_pos <- as.numeric(updated_end_points[2,6])
+        if (nrow(updated_end_points)==1) {
+          ID_start_pos <- as.numeric(updated_end_points[1,2])
+          ID_end_pos <- as.numeric(updated_end_points[1,3])
+          ASM_start_pos <- as.numeric(updated_end_points[1,5])
+          ASM_end_pos <- as.numeric(updated_end_points[1,6]) 
+        } else {
+          ID_start_pos <- as.numeric(updated_end_points[1,2])
+          ID_end_pos <- as.numeric(updated_end_points[2,3])
+          ASM_start_pos <- as.numeric(updated_end_points[1,5])
+          ASM_end_pos <- as.numeric(updated_end_points[2,6])  
+        }
         
         # Subset AnchorWave output to region of interest
         selected_region <- chr_data %>% subset(.[[2]] >= ID_start_pos) %>% subset(.[[3]] <= ID_end_pos)
@@ -288,21 +344,27 @@ server <- function(input, output) {
     link_track <- eventReactive(input$go,{
         nv_tracks <- anchorwave_tsv() %>% subset(Type=='nonvariant_region')
 
-        lineage_inputs <- c(input$query,input$comp)
-        
-        ID_lineage <- sort(lineage_inputs)[1]
-        ASM_lineage <- sort(lineage_inputs)[2]
-        
-        ID_adj <- nv_tracks %>% select(contains(ID_lineage)) %>% select(contains("ADJ"))
-        ID_nv_tracks <- cbind(seq_id=ID_lineage,ID_adj)
-        colnames(ID_nv_tracks) <- c("seq_id",'start','end')
-        
-        ASM_adj <- nv_tracks %>% select(contains(ASM_lineage)) %>% select(contains("ADJ"))
-        ASM_nv_tracks <- cbind(seq_id=ASM_lineage,ASM_adj)
-        colnames(ASM_nv_tracks) <- c("seq_id",'start','end')
-        
-        link_track <- cbind(ID_nv_tracks,ASM_nv_tracks)
-        colnames(link_track) <- c('seq_id','start','end','seq_id2','start2','end2')
+        # Add check if entire region is a structural variant
+        if (nrow(nv_tracks)!=0) {
+          lineage_inputs <- c(input$query,input$comp)
+          
+          ID_lineage <- sort(lineage_inputs)[1]
+          ASM_lineage <- sort(lineage_inputs)[2]
+          
+          ID_adj <- nv_tracks %>% select(contains(ID_lineage)) %>% select(contains("ADJ"))
+          ID_nv_tracks <- cbind(seq_id=ID_lineage,ID_adj)
+          colnames(ID_nv_tracks) <- c("seq_id",'start','end')
+          
+          ASM_adj <- nv_tracks %>% select(contains(ASM_lineage)) %>% select(contains("ADJ"))
+          ASM_nv_tracks <- cbind(seq_id=ASM_lineage,ASM_adj)
+          colnames(ASM_nv_tracks) <- c("seq_id",'start','end')
+          
+          link_track <- cbind(ID_nv_tracks,ASM_nv_tracks)
+          colnames(link_track) <- c('seq_id','start','end','seq_id2','start2','end2')
+        } else {
+          link_track <- NULL
+        }
+
         return(link_track)
     })
     
@@ -332,7 +394,6 @@ server <- function(input, output) {
         ID_file <- paste(paste(chr_input,ID_lineage,sep='_'),'.gff',sep='')
         ID_full_path <- paste(ID_subdir,ID_file,sep='')
         
-        #ID_gff_exons <- fread(ID_full_path)
         ID_gff_exons <- save_object(ID_full_path,base_url = 'host_url', region = 'host_region',key='access_ID',secret='access_key')  %>% data.table::fread()
         unlink(ID_file)
         
@@ -413,7 +474,6 @@ server <- function(input, output) {
     ## We just output a cleaned up version of the dataframe
     output_gene_track <- eventReactive(input$go,{
         
-      #parent_dir <-'./gff_gene_info/'
       parent_dir <- 's3://shiny-namsv-data-storage/gff_gene_info/'
       
       lineage_inputs <- c(input$query,input$comp)
@@ -477,9 +537,7 @@ server <- function(input, output) {
     ## This section parses the EDTA TE annotations to find
     ## fully encapsulated TEs in the region and then stores their coordinates for visualization
     TE_track <- eventReactive(input$go,{
-      #TE_anno_dir <- './TE_anno/'
       TE_anno_dir <- 's3://shiny-namsv-data-storage/TE_anno/'
-      
       
       lineage_inputs <- c(input$query,input$comp)
       
@@ -540,7 +598,6 @@ server <- function(input, output) {
     # This function does the same as the above but outputs
     # a smaller, cleaner version of the data frame for outputting
     output_TE_track <- eventReactive(input$go,{
-      #TE_anno_dir <- './TE_anno/'
       TE_anno_dir <- 's3://shiny-namsv-data-storage/TE_anno/'
       
       
@@ -626,24 +683,39 @@ server <- function(input, output) {
         
         output_TE <- TE_track()
 
-        if (!is.null(gene_track())) {
-            gggenomes(genes=gene_track(),seqs=seq_track(),links=link_track(),feats=list(output_TE)) +
-              geom_seq(color='#742615',size=2) + 
-              geom_feat(data=feats(output_TE),color='#F6C564') +
-              geom_bin_label() + 
-              geom_gene(intron_shape=4.0,size=5,color='#06485E',fill='#06485E') + 
-              geom_link(color='#89B790',fill='#89B790') + 
-              geom_vline(xintercept=coord_start,color='gray68',linetype='longdash') +
-              geom_vline(xintercept=coord_end,color='gray68',linetype='longdash') +
-              guides(colour=guide_legend( override.aes=list(linetype=c(0,1))))
+        if (is.null(gene_track()) & is.null(link_track())) {
+          gggenomes(seqs=seq_track(),feats=list(output_TE)) +
+            geom_seq(color='#742615',size=2) + 
+            geom_feat(data=feats(output_TE),color='#F6C564') +
+            geom_bin_label()+
+            geom_vline(xintercept=coord_start,color='gray68',linetype='longdash') +
+            geom_vline(xintercept=coord_end,color='gray68',linetype='longdash')
+        } else if (is.null(gene_track())) {
+          gggenomes(seqs=seq_track(),links=link_track(),feats=list(output_TE)) +
+            geom_seq(color='#742615',size=2) + 
+            geom_feat(data=feats(output_TE),color='#F6C564') +
+            geom_bin_label() +
+            geom_link() + 
+            geom_vline(xintercept=coord_start,color='gray68',linetype='longdash') +
+            geom_vline(xintercept=coord_end,color='gray68',linetype='longdash')
+          
+        } else if (is.null(link_track())) {
+          gggenomes(seqs=seq_track(),genes=gene_track(),feats=list(output_TE)) +
+            geom_seq(color='#742615',size=2) + 
+            geom_feat(data=feats(output_TE),color='#F6C564') +
+            geom_bin_label() +
+            geom_gene(intron_shape=4.0,size=5,color='#06485E',fill='#06485E') +
+            geom_vline(xintercept=coord_start,color='gray68',linetype='longdash') +
+            geom_vline(xintercept=coord_end,color='gray68',linetype='longdash')
         } else {
-            gggenomes(seqs=seq_track(),links=link_track(),feats=list(output_TE)) +
-              geom_seq(color='#742615',size=2) + 
-              geom_feat(data=feats(output_TE),color='#F6C564') +
-              geom_bin_label() +
-              geom_link() + 
-              geom_vline(xintercept=coord_start,color='gray68',linetype='longdash') +
-              geom_vline(xintercept=coord_end,color='gray68',linetype='longdash')
+          gggenomes(genes=gene_track(),seqs=seq_track(),links=link_track(),feats=list(output_TE)) +
+            geom_seq(color='#742615',size=2) + 
+            geom_feat(data=feats(output_TE),color='#F6C564') +
+            geom_bin_label() + 
+            geom_gene(intron_shape=4.0,size=5,color='#06485E',fill='#06485E') + 
+            geom_link(color='#89B790',fill='#89B790') + 
+            geom_vline(xintercept=coord_start,color='gray68',linetype='longdash') +
+            geom_vline(xintercept=coord_end,color='gray68',linetype='longdash')
         }
 
     })
